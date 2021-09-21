@@ -41,3 +41,5 @@ app.use((err, req, res, next) => {
 app.listen(config.port, () => {
     console.log(`Server started on port ${config.port}`);
 });
+
+module.exports = app;
