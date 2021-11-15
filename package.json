@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --recursive --exit"
+    "test": "mocha --recursive --exit",
+    "start":"pm2 start .\\src\\index.js -i 3"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,7 @@
     "mocha": "^9.1.3",
     "mongoose": "^5.11.13",
     "mongoose-paginate-v2": "^1.3.14",
+    "pm2": "^5.1.2",
     "sinon": "^12.0.1"
   }
 }
