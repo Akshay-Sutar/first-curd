@@ -34,6 +34,12 @@ app.get("/", (req, res, next) => {
 
 app.use(require("./routes"));
 
+app.use('*', (req, res, next) => {
+  return res
+    .status(StatusCodes.NOT_FOUND)
+    .json({ path: req.path });
+});
+
 app.use((err, req, res, next) => {
   return res
     .status(StatusCodes.INTERNAL_SERVER_ERROR)

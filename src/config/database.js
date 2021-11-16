@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 // Custom module
 const config = require('./index');
 
-(async () => {
+const connect = async () => {
     try {
         const { connectionString, options } = config.mongoDb;
         await mongoose.connect(connectionString, options);
@@ -15,4 +15,12 @@ const config = require('./index');
         console.error(err.stack);
         process.exit(1);
     }
-})();
+};
+
+switch (process.env.NODE_ENV){
+    case 'test':
+        // Connect to test DB
+        break;
+    default:
+        connect();
+}

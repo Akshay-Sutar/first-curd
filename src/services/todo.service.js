@@ -1,64 +1,31 @@
-const mongoose = require("mongoose");
-
-const todo = require("../models/todo.model");
+const TodoRepository = require("../repositories/todo.repository");
 
 class TodoService {
-  async getAllTodoItems(options) {
-    try {
-      const filter = Object.create(null);
-      return await todo.paginate(filter, options);
-    } catch (err) {
-      console.error("Get all todo items failed!", err.stack);
-      throw err;
-    }
+  getAllTodoItems(options) {
+    return TodoRepository.getAll(options);
   }
 
   async getTodoItem(id) {
-    try {
-      const options = Object.create(null);
-      const filter = {
-        _id: mongoose.Types.ObjectId(id),
-      };
-      return await todo.paginate(filter, options);
-    } catch (err) {
-      console.error("Get todo item failed!", err.stack);
-      throw err;
-    }
+    return TodoRepository.getById(id);
   }
 
   async createTodoItem({ title, description }) {
-    try {
-      const todoItem = new todo({
-        title,
-        description,
-      });
+    const todoItem = {
+      title,
+      description,
+    };
 
-      return await todoItem.save();
-    } catch (err) {
-      console.error("Add todo item failed!", err.stack);
-      throw err;
-    }
+    return TodoRepository.create(todoItem);
   }
 
   async updateTodoItem(id, { title, description, completed }) {
-    try {
-      const filter = {
-        _id: mongoose.Types.ObjectId(id),
-      };
+    const updatedTodo = {
+      title,
+      description,
+      completed,
+    };
 
-      const updateQuery = {
-        $set: {
-          title,
-          description,
-          completed,
-        },
-      };
-
-      return await todo.updateOne(filter, updateQuery).exec();
-    } catch (err) {
-      console.error("Update todo item failed!", err.stack);
-      throw err;
-    }
+    return TodoRepository.update(id, updatedTodo);
   }
 
   async deleteTodoItem(id) {
