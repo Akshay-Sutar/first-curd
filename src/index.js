@@ -41,9 +41,14 @@ app.use('*', (req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-  return res
-    .status(StatusCodes.INTERNAL_SERVER_ERROR)
-    .json(convertErrorToObject(err));
+  let statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
+
+  if (err instanceof InvalidObjectIdError) {
+    statusCode = StatusCodes.BAD_REQUEST;
+  }
+
+
+  return res.status(statusCode);
 });
 
 app.listen(config.port, () => {
