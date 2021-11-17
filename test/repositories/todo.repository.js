@@ -19,7 +19,6 @@ describe("Todo repository", () => {
     title: faker.lorem.sentence(),
     createdAt: faker.date.past(),
     updatedAt: faker.date.past(),
-    __v: 0,
   };
 
   describe("#getAll", () => {
@@ -58,6 +57,13 @@ describe("Todo repository", () => {
       },
     ];
 
+    const emptyResult = [
+      {
+        data: [],
+        count: 0,
+      },
+    ];
+
     it("should return 3 todos", async () => {
       // Arrange
       const offset = 0;
@@ -72,21 +78,33 @@ describe("Todo repository", () => {
       assert.strictEqual(todos.data.length, stubArray.length);
       assert.strictEqual(todos.count, stubArray.length);
     });
+
+    it("should return nothing in data", async () => {
+      const offset = -1;
+      const limit = -1;
+
+      //assign
+      const stub = sinon.stub(TodoModel, "aggregate").returns(emptyResult);
+
+      // act
+      const todos = await TodoRepository.getAll({ offset, limit });
+
+      //assert
+      expect(stub.calledOnce).to.be.true;
+      assert.strictEqual(todos.data.length, 0);
+      assert.strictEqual(todos.count, 0);
+    });
   });
 
   describe("#getById", () => {
-    it("should return specific todo item", async (done) => {
-      const mockOne = {
-        exec: () => {
-          return new Promise((resolve, reject) => {
-            resolve(todoStub);
-            done();
-          });
-        },
-      };
-      const stub = sinon.stub(TodoModel, "findById").returns(mockOne);
+    it("should return specific todo item", async () => {
+      //Arrange
+      const stub = sinon.stub(TodoModel, "findById").returns(todoStub);
+
+      //Act
       const todoObj = await TodoRepository.getById(id);
 
+      //Assert
       expect(stub.calledOnce).to.be.true;
       assert.strictEqual(todoStub._id.toString(), todoObj._id.toString());
       assert.strictEqual(todoStub.title, todoObj.title);
@@ -95,14 +113,28 @@ describe("Todo repository", () => {
       assert.strictEqual(todoStub.createdAt, todoObj.createdAt);
       assert.strictEqual(todoStub.updatedAt, todoObj.updatedAt);
     });
+
+    it("should return null for invalid id", async () => {
+      //Arrange
+      const fakeId = faker.datatype.number();
+      const stub = sinon.stub(TodoModel, "findById").returns(null);
+
+      //Act
+      const todoObj = await TodoRepository.getById(fakeId);
+
+      //Assert
+      expect(stub.calledOnce).to.be.true;
+      assert.strictEqual(todoObj, null);
+    });
   });
 
   describe("#create", () => {
     it("should create a new todo", async () => {
+      //Arrange
       const todoMock = sinon.stub(TodoModel, "create").returns(todoStub);
-
+      //Act
       const newTodo = await TodoRepository.create(todoStub);
-
+      //Assert
       expect(todoMock.calledOnce).to.be.true;
       assert.strictEqual(todoStub._id.toString(), newTodo._id.toString());
       assert.strictEqual(todoStub.title, newTodo.title);
@@ -111,29 +143,60 @@ describe("Todo repository", () => {
       assert.strictEqual(todoStub.createdAt, newTodo.createdAt);
       assert.strictEqual(todoStub.updatedAt, newTodo.updatedAt);
     });
+
+    it("should throw exception when adding duplicate todo", async () => {
+      //Arrange
+      const error = new Error();
+      error.name = "MongoError";
+      error.code = 11000;
+
+      const newTodo = {
+        title: todoStub.title,
+        description: todoStub.description,
+      };
+
+      sinon
+        .stub(TodoModel, "create")
+        .withArgs(newTodo)
+        .onFirstCall()
+        .returns(todoStub)
+        .withArgs(newTodo)
+        .onSecondCall()
+        .throws(error);
+
+      //Act
+      await TodoRepository.create(newTodo);
+
+      try {
+        await TodoRepository.create(newTodo);
+      } catch (e) {
+        //Assert
+        assert.strictEqual(e.code, error.code);
+        assert.strictEqual(e.name, error.name);
+      }
+    });
   });
 
   describe("#update", () => {
     it("should update the todo", async () => {
+      // Arrange
       const returnObj = {
         n: 1,
         nModified: 1,
         ok: 1,
       };
 
-      const { id, title, description, completed } = todoStub;
+      const { _id, createdAt, updatedAt, ...payload } = todoStub;
 
       const todoMock = sinon
         .stub(TodoModel, "updateOne")
-        .withArgs({ _id: id }, todoStub)
+        .withArgs({ _id: id }, payload)
         .returns(returnObj);
 
-      const todoUpdate = await TodoRepository.update(id, {
-        title,
-        description,
-        completed,
-      });
+      // Act
+      const todoUpdate = await TodoRepository.update({ id, ...payload });
 
+      // Assert
       expect(todoMock.calledOnce).to.be.true;
       assert.strictEqual(todoUpdate.n, returnObj.n);
       assert.strictEqual(todoUpdate.nModified, returnObj.nModified);

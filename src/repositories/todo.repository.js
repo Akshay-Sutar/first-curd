@@ -1,10 +1,7 @@
 const mongoose = require("mongoose");
-const todo = require("../models/todo.model");
+const Todo = require("../models/todo.model");
 
 class TodoRepository {
-  constructor() {
-    this.todo = todo;
-  }
   async getAll({ page, limit }) {
     const offset = (page - 1) * limit;
     const pipeline = [
@@ -27,7 +24,7 @@ class TodoRepository {
       },
     ];
 
-    const results = await this.todo.aggregate(pipeline);
+    const results = await Todo.aggregate(pipeline);
     const { data, count } = results?.[0];
     const result = {
       next_page: "",
@@ -39,52 +36,34 @@ class TodoRepository {
     return result;
   }
 
-  async getById(id) {
-    return await todo.findById(id).exec();
+  getById(id) {
+    return Todo.findById(id);
   }
 
-  async create({ title, description }) {
-    try {
-      const todoItem = new todo({
-        title,
-        description,
-      });
-      return await todo.create(todoItem);
-    } catch (err) {
-      throw err;
-    }
+  create({ title, description }) {
+    return Todo.create({ title, description });
   }
 
-  async update(id, { title, description, completed }) {
-    try {
-      const filter = {
-        _id: mongoose.Types.ObjectId(id),
-      };
+  update({ id, title, description, completed }) {
+    const filter = {
+      _id: mongoose.Types.ObjectId(id),
+    };
 
-      const updateQuery = {
-        title,
-        description,
-        completed,
-      };
+    const updateQuery = {
+      title,
+      description,
+      completed,
+    };
 
-      return await todo.updateOne(filter, updateQuery);
-    } catch (err) {
-      console.error("Update todo item failed!", err.stack);
-      throw err;
-    }
+    return Todo.updateOne(filter, updateQuery);
   }
 
-  async delete(id) {
-    try {
-      const filter = {
-        _id: mongoose.Types.ObjectId(id),
-      };
+  delete(id) {
+    const filter = {
+      _id: mongoose.Types.ObjectId(id),
+    };
 
-      return await todo.deleteOne(filter).exec();
-    } catch (err) {
-      console.error("Delete todo item failed!", err.stack);
-      throw err;
-    }
+    return Todo.deleteOne(filter);
   }
 }
 

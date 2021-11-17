@@ -1,44 +1,58 @@
 const TodoRepository = require("../repositories/todo.repository");
+const { isValidObjectId } = require("../lib");
+const { DuplicateItemError } = require("../errors");
 
 class TodoService {
-  getAllTodoItems(options) {
-    return TodoRepository.getAll(options);
+  getAllTodoItems({ page, limit }) {
+    if (page < 0 || limit < 0) {
+      throw new InvalidObjectIdError("Invalid query parameters");
+    }
+    return TodoRepository.getAll({ page, limit });
   }
 
-  async getTodoItem(id) {
+  getTodoItem(id) {
+    if (isValidObjectId(id)) {
+      throw new InvalidObjectIdError();
+    }
+
     return TodoRepository.getById(id);
   }
 
   async createTodoItem({ title, description }) {
-    const todoItem = {
-      title,
-      description,
-    };
-
-    return TodoRepository.create(todoItem);
-  }
-
-  async updateTodoItem(id, { title, description, completed }) {
-    const updatedTodo = {
-      title,
-      description,
-      completed,
-    };
-
-    return TodoRepository.update(id, updatedTodo);
-  }
-
-  async deleteTodoItem(id) {
     try {
-      const filter = {
-        _id: mongoose.Types.ObjectId(id),
+      const todoItem = {
+        title,
+        description,
       };
 
-      return await todo.deleteOne(filter).exec();
+      return await TodoRepository.create(todoItem);
     } catch (err) {
-      console.error("Delete todo item failed!", err.stack);
+      if (err.code === 11000) {
+        throw new DuplicateItemError();
+      }
+
       throw err;
     }
+  }
+
+  updateTodoItem({ id, title, description, completed }) {
+    if (isValidObjectId(id)) {
+      throw new InvalidObjectIdError();
+    }
+
+    return TodoRepository.update({ id, title, description, completed });
+  }
+
+  deleteTodoItem(id) {
+    if (isValidObjectId(id)) {
+      throw new InvalidObjectIdError();
+    }
+
+    const filter = {
+      _id: mongoose.Types.ObjectId(id),
+    };
+
+    return todo.deleteOne(filter);
   }
 }
 

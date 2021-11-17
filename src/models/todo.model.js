@@ -1,24 +1,26 @@
-const mongoose = require('mongoose');
-const mongoosePaginate = require('mongoose-paginate-v2');
+const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const todoSchema = new Schema({ 
+const todoSchema = new Schema(
+  {
     title: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     description: {
-        type: String,
-        default: ''
+      type: String,
+      default: "",
     },
     completed: {
-        type: Boolean,
-        default: false
-    }
-}, {
-    timestamps: true
-});
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-todoSchema.plugin(mongoosePaginate);
+todoSchema.index({ title: 1, description: 1 }, { unqiue: true });
 
-module.exports = mongoose.model('todo', todoSchema, 'todo');
+module.exports = mongoose.model("todo", todoSchema, "todo");

@@ -3,12 +3,12 @@
 // NPM/yarn module
 const express = require("express");
 const cors = require("cors");
-const bodyParser = require("body-parser");
 const { StatusCodes } = require("http-status-codes");
 
 // Custom module
 const config = require("./config");
 const convertErrorToObject = require("./lib/error");
+const { InvalidObjectIdError, InvalidRequestParametersError, DuplicateItemError } = require("./errors");
 
 process.on("uncaughtException", (err) => {
   console.error("Uncaught exception - ", err.stack);
@@ -34,19 +34,24 @@ app.get("/", (req, res, next) => {
 
 app.use(require("./routes"));
 
-app.use('*', (req, res, next) => {
-  return res
-    .status(StatusCodes.NOT_FOUND)
-    .json({ path: req.path });
+app.use("*", (req, res, next) => {
+  return res.status(StatusCodes.NOT_FOUND).json({ path: req.path });
 });
 
 app.use((err, req, res, next) => {
   let statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
+  let message = 'Server error';
 
   if (err instanceof InvalidObjectIdError) {
     statusCode = StatusCodes.BAD_REQUEST;
+    message = 'Invalid object Id';
+  } else if (err instanceof InvalidRequestParametersError) {
+    statusCode = StatusCodes.BAD_REQUEST;
+    message = 'Invalid pagination parameters';
+  } else if (err instanceof DuplicateItemError) {
+    statusCode = StatusCodes.CONFLICT;
+    message = err.message;
   }
-
 
   return res.status(statusCode);
 });

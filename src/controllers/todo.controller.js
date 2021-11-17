@@ -7,17 +7,8 @@ const utils = require("../lib");
 
 class TodoController {
   async getAll(req, res, next) {
-    const options = { page: 1, limit: 10 };
     try {
-      if (req.query && req.query.page) {
-        options.page = parseInt(req.query.page, 10);
-      }
-
-      if (req.query && req.query.limit) {
-        options.limit = parseInt(req.query.limit, 10);
-      }
-
-      const todoItems = await todoService.getAllTodoItems(options);
+      const todoItems = await todoService.getAllTodoItems(req.query);
       return res.status(StatusCodes.OK).json(todoItems);
     } catch (err) {
       return next(err);
@@ -26,19 +17,14 @@ class TodoController {
 
   async getSpecific(req, res) {
     try {
-      const { id } = req.params;
-
-      if (!utils.isValidObjectId(id)) {
-        const errorResponse = utils.mapResponse("Invalid Id!");
-        return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
+      const todoItem = await todoService.getTodoItem(req.params.id);
+      if (!todoItem) {
+        return res.status(StatusCodes.NOT_FOUND);
       }
 
-      const todoItem = await todoService.getTodoItem(id);
       return res.status(StatusCodes.OK).json(todoItem);
     } catch (err) {
-      return res
-        .status(StatusCodes.UNPROCESSABLE_ENTITY)
-        .json(convertErrorToObject(err));
+      return next(err);
     }
   }
 
@@ -54,9 +40,7 @@ class TodoController {
 
       return res.status(StatusCodes.CREATED).json(todoItem);
     } catch (err) {
-      return res
-        .status(StatusCodes.UNPROCESSABLE_ENTITY)
-        .json(convertErrorToObject(err));
+      return next(err);
     }
   }
 
@@ -90,9 +74,7 @@ class TodoController {
 
       return res.status(StatusCodes.OK).json(updateResponse);
     } catch (err) {
-      return res
-        .estatus(StatusCodes.UNPROCESSABLE_ENTITY)
-        .json(convertErrorToObject(err));
+      return next(err);
     }
   }
 
@@ -109,9 +91,7 @@ class TodoController {
       const deleteResult = await todoService.deleteTodoItem(id);
       return res.status(StatusCodes.OK).json(deleteResult);
     } catch (err) {
-      return res
-        .status(StatusCodes.UNPROCESSABLE_ENTITY)
-        .json(convertErrorToObject(err));
+      return next(err);
     }
   }
 }
