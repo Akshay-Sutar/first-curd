@@ -1,6 +1,6 @@
 const TodoRepository = require("../repositories/todo.repository");
 const { isValidObjectId } = require("../lib");
-const { DuplicateItemError } = require("../errors");
+const { DuplicateItemError, InvalidObjectIdError } = require("../errors");
 
 class TodoService {
   getAllTodoItems({ page, limit }) {
@@ -11,7 +11,7 @@ class TodoService {
   }
 
   getTodoItem(id) {
-    if (isValidObjectId(id)) {
+    if (!isValidObjectId(id)) {
       throw new InvalidObjectIdError();
     }
 
@@ -36,7 +36,7 @@ class TodoService {
   }
 
   updateTodoItem({ id, title, description, completed }) {
-    if (isValidObjectId(id)) {
+    if (!isValidObjectId(id)) {
       throw new InvalidObjectIdError();
     }
 
@@ -44,15 +44,11 @@ class TodoService {
   }
 
   deleteTodoItem(id) {
-    if (isValidObjectId(id)) {
+    if (!isValidObjectId(id)) {
       throw new InvalidObjectIdError();
     }
 
-    const filter = {
-      _id: mongoose.Types.ObjectId(id),
-    };
-
-    return todo.deleteOne(filter);
+    return TodoRepository.delete(id);
   }
 }
 

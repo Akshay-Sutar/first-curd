@@ -15,7 +15,7 @@ class TodoController {
     }
   }
 
-  async getSpecific(req, res) {
+  async getSpecific(req, res, next) {
     try {
       const todoItem = await todoService.getTodoItem(req.params.id);
       if (!todoItem) {
@@ -28,7 +28,7 @@ class TodoController {
     }
   }
 
-  async add(req, res) {
+  async add(req, res, next) {
     try {
       if (!req.body || !req.body.title) {
         const errorResponse = utils.mapResponse("No title specified!");
@@ -44,7 +44,7 @@ class TodoController {
     }
   }
 
-  async update(req, res) {
+  async update(req, res, next) {
     let errorResponse;
     try {
       if (!req.body || !Object.keys(req.body).length) {
@@ -78,7 +78,7 @@ class TodoController {
     }
   }
 
-  async delete(req, res) {
+  async delete(req, res, next) {
     let errorResponse;
     try {
       const { id } = req.params;

@@ -202,5 +202,40 @@ describe("Todo repository", () => {
       assert.strictEqual(todoUpdate.nModified, returnObj.nModified);
       assert.strictEqual(todoUpdate.ok, returnObj.ok);
     });
+
+    it("should not update if id is not provided", async () => {
+      // Arrange
+      const updateDto = {
+        id: mongoose.Types.ObjectId().toString(),
+        title: faker.lorem.sentence(),
+        completed: true,
+        description: faker.lorem.sentence(),
+      };
+      const filter = {
+        _id: mongoose.Types.ObjectId(updateDto.id),
+      };
+      const payload = {
+        title: updateDto.title,
+        description: updateDto.description,
+        completed: updateDto.completed,
+      };
+      const writeConcernResult = {
+        n: 0,
+        nModified: 0,
+      };
+
+      const stub = sinon
+        .stub(TodoModel, "updateOne")
+        .withArgs(filter, payload)
+        .returns(writeConcernResult);
+
+      // Act
+      const updateResult = await TodoRepository.update(updateDto);
+
+      // Assert
+      expect(stub.calledOnce).to.be.true;
+      assert.strictEqual(updateResult.n, writeConcernResult.n);
+      assert.strictEqual(updateResult.nModified, writeConcernResult.nModified);
+    });
   });
 });
