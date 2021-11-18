@@ -62,7 +62,6 @@ class TodoRepository {
     const filter = {
       _id: mongoose.Types.ObjectId(id),
     };
-
     return Todo.deleteOne(filter);
   }
 }

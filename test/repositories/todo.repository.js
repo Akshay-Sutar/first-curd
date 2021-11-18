@@ -238,4 +238,82 @@ describe("Todo repository", () => {
       assert.strictEqual(updateResult.nModified, writeConcernResult.nModified);
     });
   });
+
+  describe("#delete", () => {
+    it("should delete a todo item", async () => {
+      //Arrange
+      const todoMock = sinon.stub(TodoModel, "create").returns(todoStub);
+      const newTodo = await TodoRepository.create(todoStub);
+
+      const filter = {
+        _id: mongoose.Types.ObjectId(newTodo._id.toString()),
+      };
+
+      const deleteConcern = {
+        n: 1,
+        ok: 1,
+        deletedCount: 1,
+      };
+
+      const todoDeleteStub = sinon
+        .stub(TodoModel, "deleteOne")
+        .withArgs(filter)
+        .returns(deleteConcern);
+
+      //Act
+      const result = TodoRepository.delete(newTodo._id.toString());
+
+      //Assert
+      expect(todoDeleteStub.calledOnce).to.be.true;
+      assert.strictEqual(result.n, deleteConcern.n);
+      assert.strictEqual(result.ok, deleteConcern.ok);
+      assert.strictEqual(result.deletedCount, deleteConcern.deletedCount);
+    });
+
+    it("should not delete when id is not passed", async () => {
+      //Arrange
+      const deleteConcern = {
+        n: 0,
+        ok: 1,
+        deletedCount: 0,
+      };
+
+      const todoDeleteStub = sinon
+        .stub(TodoModel, "deleteOne")
+        .returns(deleteConcern);
+
+      //Act
+      const result = await TodoRepository.delete(null);
+      expect(todoDeleteStub.calledOnce).to.be.true;
+      assert.strictEqual(result.n, deleteConcern.n);
+      assert.strictEqual(result.ok, deleteConcern.ok);
+      assert.strictEqual(result.deletedCount, deleteConcern.deletedCount);
+    });
+
+    it("should not delete when id is not found", async () => {
+      //Arrange
+      const deleteConcern = {
+        n: 0,
+        ok: 1,
+        deletedCount: 0,
+      };
+
+      const fakeId = "618a56912523a13b0034e428";
+      const filter = {
+        _id: mongoose.Types.ObjectId(fakeId),
+      };
+
+      const todoDeleteStub = sinon
+        .stub(TodoModel, "deleteOne")
+        .withArgs(filter)
+        .returns(deleteConcern);
+
+      //Act
+      const result = await TodoRepository.delete(fakeId);
+      expect(todoDeleteStub.calledOnce).to.be.true;
+      assert.strictEqual(result.n, deleteConcern.n);
+      assert.strictEqual(result.ok, deleteConcern.ok);
+      assert.strictEqual(result.deletedCount, deleteConcern.deletedCount);
+    });
+  });
 });
