@@ -2,8 +2,7 @@ const express = require("express");
 const { StatusCodes } = require("http-status-codes");
 
 const todoService = require("../services/todo.service");
-const convertErrorToObject = require("../lib/error");
-const utils = require("../lib");
+const convertErrorToObject = require("../utils/errors");
 
 class TodoController {
   async getAll(req, res, next) {
@@ -31,12 +30,23 @@ class TodoController {
   async add(req, res, next) {
     try {
       if (!req.body || !req.body.title) {
-        const errorResponse = utils.mapResponse("No title specified!");
+        const errorResponse = {}; //utils.mapResponse("No title specified!");
         return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
       }
 
       const { title, description } = req.body;
       const todoItem = await todoService.createTodoItem({ title, description });
+
+      // Set location header to point to newly created resource
+      const fullUrl = [
+        req.protocol,
+        "://",
+        req.get("host"),
+        req.baseUrl,
+        req.path,
+        todoItem._id,
+      ].join("");
+      res.location(fullUrl);
 
       return res.status(StatusCodes.CREATED).json(todoItem);
     } catch (err) {
@@ -48,20 +58,20 @@ class TodoController {
     let errorResponse;
     try {
       if (!req.body || !Object.keys(req.body).length) {
-        errorResponse = utils.mapResponse("Empty body parameter!");
+        errorResponse = {}; //utils.mapResponse("Empty body parameter!");
         return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
       }
 
       const { id } = req.params;
 
       if (!utils.isValidObjectId(id)) {
-        errorResponse = utils.mapResponse("Invalid Id!");
+        errorResponse = {}; //utils.mapResponse("Invalid Id!");
         return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
       }
 
       const todoItem = await todoService.getTodoItem(id);
       if (!todoItem) {
-        errorResponse = utils.mapResponse("No item found to update!");
+        errorResponse = {}; //utils.mapResponse("No item found to update!");
         return res.status(StatusCodes.NOT_FOUND).json(errorResponse);
       }
 
@@ -84,7 +94,7 @@ class TodoController {
       const { id } = req.params;
 
       if (!utils.isValidObjectId(id)) {
-        errorResponse = utils.mapResponse("Invalid Id!");
+        errorResponse = {}; //utils.mapResponse("Invalid Id!");
         return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
       }
 

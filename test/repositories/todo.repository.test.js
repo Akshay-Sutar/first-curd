@@ -27,6 +27,7 @@ describe("Todo repository", () => {
       {
         _id: mongoose.Types.ObjectId(),
         title: faker.lorem.sentence(),
+        description: faker.lorem.paragraph(),
         completed: false,
         createdAt: faker.date.past(),
         updatedAt: faker.date.past(),
@@ -34,6 +35,7 @@ describe("Todo repository", () => {
       {
         _id: mongoose.Types.ObjectId(),
         title,
+        description: faker.lorem.paragraph(),
         completed: false,
         createdAt: faker.date.past(),
         updatedAt: faker.date.past(),
@@ -41,6 +43,7 @@ describe("Todo repository", () => {
       {
         _id: mongoose.Types.ObjectId(),
         title: faker.lorem.sentence(),
+        description: faker.lorem.paragraph(),
         completed: false,
         createdAt: faker.date.past(),
         updatedAt: faker.date.past(),
@@ -242,14 +245,14 @@ describe("Todo repository", () => {
   describe("#delete", () => {
     it("should delete a todo item", async () => {
       //Arrange
-      const todoMock = sinon.stub(TodoModel, "create").returns(todoStub);
+      sinon.stub(TodoModel, "create").returns(todoStub);
       const newTodo = await TodoRepository.create(todoStub);
 
       const filter = {
         _id: mongoose.Types.ObjectId(newTodo._id.toString()),
       };
 
-      const deleteConcern = {
+      const writeConcern = {
         n: 1,
         ok: 1,
         deletedCount: 1,
@@ -258,16 +261,16 @@ describe("Todo repository", () => {
       const todoDeleteStub = sinon
         .stub(TodoModel, "deleteOne")
         .withArgs(filter)
-        .returns(deleteConcern);
+        .returns(writeConcern);
 
       //Act
       const result = TodoRepository.delete(newTodo._id.toString());
 
       //Assert
       expect(todoDeleteStub.calledOnce).to.be.true;
-      assert.strictEqual(result.n, deleteConcern.n);
-      assert.strictEqual(result.ok, deleteConcern.ok);
-      assert.strictEqual(result.deletedCount, deleteConcern.deletedCount);
+      assert.strictEqual(result.n, writeConcern.n);
+      assert.strictEqual(result.ok, writeConcern.ok);
+      assert.strictEqual(result.deletedCount, writeConcern.deletedCount);
     });
 
     it("should not delete when id is not passed", async () => {

@@ -1,14 +1,14 @@
-// System module
-
-// NPM/yarn module
 const express = require("express");
 const cors = require("cors");
-const { StatusCodes } = require("http-status-codes");
+const compression = require("compression");
+const helmet = require("helmet");
 
 // Custom module
-const config = require("./config");
-const convertErrorToObject = require("./lib/error");
-const { InvalidObjectIdError, InvalidRequestParametersError, DuplicateItemError } = require("./errors");
+const { connect, options } = require("./config");
+const {
+  NotFoundMiddleware,
+  UnhandledErrorMiddleware,
+} = require("./middlewares");
 
 process.on("uncaughtException", (err) => {
   console.error("Uncaught exception - ", err.stack);
@@ -21,43 +21,29 @@ process.on("unhandledRejection", (err) => {
 });
 
 const app = express();
-require("./config/database");
 
 // Pipeline
 app.use(cors());
+app.use(compression());
+app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/", (req, res, next) => {
-  return res.json({ message: "Hello world!" });
-});
-
 app.use(require("./routes"));
+app.use(NotFoundMiddleware);
+app.use(UnhandledErrorMiddleware);
 
-app.use("*", (req, res, next) => {
-  return res.status(StatusCodes.NOT_FOUND).json({ path: req.path });
-});
-
-app.use((err, req, res, next) => {
-  let statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
-  let message = 'Server error';
-
-  if (err instanceof InvalidObjectIdError) {
-    statusCode = StatusCodes.BAD_REQUEST;
-    message = 'Invalid object Id';
-  } else if (err instanceof InvalidRequestParametersError) {
-    statusCode = StatusCodes.BAD_REQUEST;
-    message = 'Invalid pagination parameters';
-  } else if (err instanceof DuplicateItemError) {
-    statusCode = StatusCodes.CONFLICT;
-    message = err.message;
-  }
-
-  return res.status(statusCode);
-});
-
-app.listen(config.port, () => {
-  console.log(`Server started on port ${config.port}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  connect(options.mongoDb.connectionString)
+    .then((conn) => {
+      app.listen(options.port);
+    })
+    .catch((err) => {
+      console.error("Connection failed", err);
+      process.exit(1);
+    });
+} else {
+  app.listen(options.port);
+}
 
 module.exports = app;

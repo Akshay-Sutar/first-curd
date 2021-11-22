@@ -1,4 +1,4 @@
-const { InvalidRequestParametersError } = require("../errors");
+const { InvalidRequestParametersError } = require("../utils/errors");
 
 class BaseMiddleware {
   constructor() {
@@ -16,7 +16,7 @@ class BaseMiddleware {
     }
 
     if (isNaN(limit)) {
-        req.query.limit = 10;
+      req.query.limit = 10;
     }
 
     if (page < 0) {

@@ -1,12 +1,20 @@
 const TodoRepository = require("../repositories/todo.repository");
-const { isValidObjectId } = require("../lib");
-const { DuplicateItemError, InvalidObjectIdError } = require("../errors");
+const { isValidObjectId } = require("../utils");
+const {
+  DuplicateItemError,
+  InvalidObjectIdError,
+  InvalidRequestParametersError,
+} = require("../utils/errors");
 
 class TodoService {
   getAllTodoItems({ page, limit }) {
-    if (page < 0 || limit < 0) {
-      throw new InvalidObjectIdError("Invalid query parameters");
+    page = parseInt(page, 10);
+    limit = parseInt(limit, 10);
+
+    if (page < 1 || limit < 1) {
+      throw new InvalidRequestParametersError("Invalid pagination parameters");
     }
+
     return TodoRepository.getAll({ page, limit });
   }
 
