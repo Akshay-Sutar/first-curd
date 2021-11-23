@@ -1,12 +1,14 @@
 const request = require("supertest");
 const app = require("../../src");
 const { assert, expect } = require("chai");
+const sinon = require("sinon");
 const faker = require("faker");
 const { MongoMemoryServer } = require("mongodb-memory-server");
 const { connect } = require("../../src/config");
 const { StatusCodes } = require("http-status-codes");
 const mongoose = require("mongoose");
 const { before, after, describe } = require("mocha");
+const TodoService = require("../../src/services/todo.service");
 
 const Todo = require("../../src/models/todo.model");
 
@@ -104,6 +106,22 @@ describe("GET /api/v1/todo", () => {
       })
       .catch((err) => done(err));
   });
+
+  it("should return INTERNAL_SERVER_ERROR while fetching todo list", (done) => {
+    const stub = sinon.stub(TodoService, "getAllTodoItems").throws(new Error());
+
+    request(app)
+      .get("/api/v1/todo")
+      .set("Accept", "application/json")
+      .expect("Content-type", /json/)
+      .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+      .then((response) => {
+        done();
+      })
+      .catch((err) => {
+        done(err);
+      });
+  });
 });
 
 describe("GET /api/v1/todo", () => {
@@ -146,6 +164,23 @@ describe("GET /api/v1/todo", () => {
         done();
       });
   });
+
+  it("should return INTERNAL_SERVER_ERROR while fetching specific todo item", (done) => {
+    const id = insertedTodos[0]._id;
+    const stub = sinon.stub(TodoService, "getTodoItem").throws(new Error());
+
+    request(app)
+      .get(`/api/v1/todo/${id}`)
+      .set("Accept", "application/json")
+      .expect("Content-type", /json/)
+      .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+      .then((response) => {
+        done();
+      })
+      .catch((err) => {
+        done(err);
+      });
+  });
 });
 
 describe("POST /api/v1/todo", () => {
@@ -160,6 +195,37 @@ describe("POST /api/v1/todo", () => {
         done();
       })
       .catch((err) => done(err));
+  });
+
+  it("should return BAD_REQUEST while creating todo", (done) => {
+    request(app)
+      .post(`/api/v1/todo`)
+      .send({})
+      .set("Accept", "application/json")
+      .expect("Content-type", /json/)
+      .expect(StatusCodes.BAD_REQUEST)
+      .then((response) => {
+        done();
+      })
+      .catch((err) => {
+        done(err);
+      });
+  });
+
+  it("should return INTERNAL_SERVER_ERROR while creating todo", (done) => {
+    const stub = sinon.stub(TodoService, "createTodoItem").throws(new Error());
+    request(app)
+      .post(`/api/v1/todo`)
+      .send(newTodo)
+      .set("Accept", "application/json")
+      .expect("Content-type", /json/)
+      .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+      .then((response) => {
+        done();
+      })
+      .catch((err) => {
+        done(err);
+      });
   });
 
   // it("should throw DuplicateItemError error for duplicate Todo", async (done) => {
@@ -289,6 +355,23 @@ describe("PUT /api/v1/todo", () => {
       .then(() => done())
       .catch(() => done());
   });
+
+  it("should return INTERNAL_SERVER_ERROR while updating todo", (done) => {
+    const id = insertedTodos[0]._id;
+    const stub = sinon.stub(TodoService, "updateTodoItem").throws(new Error());
+    request(app)
+      .put(`/api/v1/todo/${id}`)
+      .send(newTodo)
+      .set("Accept", "application/json")
+      .expect("Content-type", /json/)
+      .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+      .then((response) => {
+        done();
+      })
+      .catch((err) => {
+        done(err);
+      });
+  });
 });
 
 describe("DELETE /api/v1/todo", () => {
@@ -317,6 +400,22 @@ describe("DELETE /api/v1/todo", () => {
       .expect(StatusCodes.BAD_REQUEST)
       .then(() => done())
       .catch((err) => done(err));
+  });
+
+  it("should return INTERNAL_SERVER_ERROR while deleting a todo", (done) => {
+    const id = insertedTodos[0]._id;
+    const stub = sinon.stub(TodoService, "deleteTodoItem").throws(new Error());
+    request(app)
+      .delete(`/api/v1/todo/${id}`)
+      .set("Accept", "application/json")
+      .expect("Content-type", /json/)
+      .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+      .then((response) => {
+        done();
+      })
+      .catch((err) => {
+        done(err);
+      });
   });
 });
 

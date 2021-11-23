@@ -17,7 +17,6 @@ class TodoController {
   async getSpecific(req, res, next) {
     try {
       const todoItem = await todoService.getTodoItem(req.params.id);
-      console.log("todoItem", todoItem);
       if (!todoItem) {
         return res.status(StatusCodes.NOT_FOUND).end();
       }
