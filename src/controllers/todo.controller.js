@@ -2,7 +2,7 @@ const express = require("express");
 const { StatusCodes } = require("http-status-codes");
 
 const todoService = require("../services/todo.service");
-const convertErrorToObject = require("../utils/errors");
+const { isValidObjectId } = require("../utils");
 
 class TodoController {
   async getAll(req, res, next) {
@@ -64,7 +64,7 @@ class TodoController {
 
       const { id } = req.params;
 
-      if (!utils.isValidObjectId(id)) {
+      if (!isValidObjectId(id)) {
         errorResponse = {}; //utils.mapResponse("Invalid Id!");
         return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
       }
@@ -76,7 +76,8 @@ class TodoController {
       }
 
       const { title, description, completed } = req.body;
-      const updateResponse = await todoService.updateTodoItem(id, {
+      const updateResponse = await todoService.updateTodoItem({
+        id,
         title,
         description,
         completed,
@@ -93,7 +94,7 @@ class TodoController {
     try {
       const { id } = req.params;
 
-      if (!utils.isValidObjectId(id)) {
+      if (!isValidObjectId(id)) {
         errorResponse = {}; //utils.mapResponse("Invalid Id!");
         return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
       }
