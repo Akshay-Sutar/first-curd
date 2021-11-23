@@ -1,7 +1,6 @@
 const request = require("supertest");
 const app = require("../../src");
 const { assert, expect } = require("chai");
-const sinon = require("sinon");
 const faker = require("faker");
 const { MongoMemoryServer } = require("mongodb-memory-server");
 const { connect } = require("../../src/config");
@@ -87,7 +86,7 @@ describe("GET /api/v1/todo", () => {
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
       .expect(StatusCodes.BAD_REQUEST)
-      .then((response) => {
+      .then(() => {
         done();
       })
       .catch((err) => done(err));
@@ -100,7 +99,7 @@ describe("GET /api/v1/todo", () => {
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
       .expect(StatusCodes.BAD_REQUEST)
-      .then((response) => {
+      .then(() => {
         done();
       })
       .catch((err) => done(err));
@@ -128,26 +127,25 @@ describe("GET /api/v1/todo", () => {
           ]);
         done();
       })
-      .catch((err) => {
+      .catch(() => {
         done();
       });
   });
 
-  // it("should not return a specific Todo item", (done) => {
-  //   const id = mongoose.Types.ObjectId();
-  //   console.log("req id", id);
-  //   request(app)
-  //     .get(`/api/v1/todo/${id}`)
-  //     .set("Accept", "application/json")
-  //     .then((response) => {
-  //       console.log("response", response);
-  //       done();
-  //     })
-  //     .catch((err) => {
-  //       console.log("err", err);
-  //       done();
-  //     });
-  // });
+  it("should return NOT_FOUND", (done) => {
+    const id = mongoose.Types.ObjectId();
+    request(app)
+      .get(`/api/v1/todo/${id}`)
+      .set("Accept", "application/json")
+      .expect("Content-type", /json/)
+      .then((response) => {
+        done();
+      })
+      .catch((err) => {
+        assert.instanceOf(err, Error);
+        done();
+      });
+  });
 });
 
 describe("POST /api/v1/todo", () => {
@@ -158,7 +156,7 @@ describe("POST /api/v1/todo", () => {
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
       .expect(StatusCodes.CREATED)
-      .then((response) => {
+      .then(() => {
         done();
       })
       .catch((err) => done(err));
@@ -242,7 +240,7 @@ describe("PUT /api/v1/todo", () => {
         expect(body).to.have.all.keys(["n", "nModified", "ok"]);
         done();
       })
-      .catch((err) => {
+      .catch(() => {
         done();
       });
   });
@@ -259,7 +257,7 @@ describe("PUT /api/v1/todo", () => {
         let { body } = response;
         done();
       })
-      .catch((err) => {
+      .catch(() => {
         done();
       });
   });
@@ -272,7 +270,7 @@ describe("PUT /api/v1/todo", () => {
       .set("Accept", "application/json")
       .expect("Content-type", /json/)
       .expect(StatusCodes.BAD_REQUEST)
-      .then((res) => {
+      .then(() => {
         done();
       })
       .catch((err) => {
@@ -288,8 +286,8 @@ describe("PUT /api/v1/todo", () => {
       .set("Accept", "application/json")
       .expect("Content-type", /json/)
       .expect(StatusCodes.NOT_FOUND)
-      .then((res) => done())
-      .catch((err) => done());
+      .then(() => done())
+      .catch(() => done());
   });
 });
 
@@ -308,7 +306,7 @@ describe("DELETE /api/v1/todo", () => {
         expect(body).to.have.all.keys(["n", "ok", "deletedCount"]);
         done();
       })
-      .catch((err) => done());
+      .catch(() => done());
   });
 
   it("should respond with BAD_REQUEST for invalid id", (done) => {
@@ -317,7 +315,31 @@ describe("DELETE /api/v1/todo", () => {
       .delete(`/api/v1/todo/${id}`)
       .set("Accept", "application/json")
       .expect(StatusCodes.BAD_REQUEST)
-      .then((res) => done())
+      .then(() => done())
+      .catch((err) => done(err));
+  });
+});
+
+describe("GET misc routes", () => {
+  it("should return Hello World as response", (done) => {
+    request(app)
+      .get("/")
+      .set("Accept", "application/json")
+      .expect("Content-type", /json/)
+      .expect(StatusCodes.OK)
+      .then((res) => {
+        expect(res.body).to.be.an("object");
+        expect(res.body).to.have.all.keys(["message"]);
+        done();
+      })
+      .catch((err) => done(err));
+  });
+  it("should throw PathNotFoundError error", (done) => {
+    request(app)
+      .get("/api/todo")
+      .set("Accept", "application/json")
+      .expect(StatusCodes.NOT_FOUND)
+      .then(() => done())
       .catch((err) => done(err));
   });
 });
