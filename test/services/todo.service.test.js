@@ -8,6 +8,7 @@ const { TodoRepository } = require("../../src/repositories");
 const {
   InvalidObjectIdError,
   DuplicateItemError,
+  InvalidRequestParametersError,
 } = require("../../src/utils/errors");
 
 afterEach(() => {
@@ -56,6 +57,16 @@ describe("Todo Service", () => {
 
       //assert
       expect(stub.calledOnce).to.be.true;
+    });
+
+    it("should throw InvalidRequestParametersError error", async () => {
+      try {
+        let page = -1;
+        let limit = -1;
+        await TodoService.getAllTodoItems(page, limit);
+      } catch (err) {
+        assert.instanceOf(err, InvalidRequestParametersError);
+      }
     });
   });
 
@@ -139,6 +150,29 @@ describe("Todo Service", () => {
         assert.instanceOf(err, DuplicateItemError);
       }
     });
+
+    it("should throw error when todo with incorrect type is added", async () => {
+      //Arrange
+      const newTodo = {
+        title: faker.datatype.number(),
+        description: faker.datatype.number(),
+      };
+
+      const error = new Error();
+      error.name = "Invalid datatype";
+
+      const stub = sinon
+        .stub(TodoRepository, "create")
+        .withArgs(newTodo)
+        .throws(error);
+
+      try {
+        await TodoService.createTodoItem(newTodo);
+      } catch (err) {
+        expect(stub.calledOnce).to.be.true;
+        assert.instanceOf(err, Error);
+      }
+    });
   });
 
   describe("#updateTodoItem", () => {
@@ -169,24 +203,30 @@ describe("Todo Service", () => {
 
     it("should throw error when no id is specified", async () => {
       const todoItem = {
-        id: null,
+        id: "1234",
         title: dummyTodo.title,
         description: dummyTodo.description,
         completed: dummyTodo.completed,
       };
 
+      const returnObj = {
+        n: 1,
+        nModified: 1,
+        ok: 1,
+      };
+
       // Arrange
       const todoServiceStub = sinon
-        .stub(TodoService, "updateTodoItem")
+        .stub(TodoRepository, "update")
         .withArgs(todoItem)
-        .throws(new InvalidObjectIdError());
+        .returns(returnObj);
 
       //Act
       try {
         await TodoService.updateTodoItem(todoItem);
       } catch (err) {
         //Assert
-        expect(todoServiceStub.calledOnce).to.be.true;
+        expect(todoServiceStub.calledOnce).to.be.false;
         assert.instanceOf(err, InvalidObjectIdError);
       }
     });
