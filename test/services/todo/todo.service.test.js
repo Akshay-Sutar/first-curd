@@ -3,13 +3,13 @@ const { assert, expect } = require("chai");
 const faker = require("faker");
 const mongoose = require("mongoose");
 
-const { TodoService } = require("../../src/services");
-const { TodoRepository } = require("../../src/repositories");
+const { TodoService } = require("../../../src/services");
+const { TodoRepository } = require("../../../src/repositories");
 const {
   InvalidObjectIdError,
   DuplicateItemError,
   InvalidRequestParametersError,
-} = require("../../src/utils/errors");
+} = require("../../../src/utils/errors");
 
 afterEach(() => {
   sinon.restore();

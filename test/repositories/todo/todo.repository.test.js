@@ -3,8 +3,8 @@ const sinon = require("sinon");
 const mongoose = require("mongoose");
 const faker = require("faker");
 
-const TodoModel = require("../../src/models/todo.model");
-const TodoRepository = require("../../src/repositories/todo.repository");
+const TodoModel = require("../../../src/models/todo.model");
+const TodoRepository = require("../../../src/repositories/todo.repository");
 
 afterEach(() => {
   sinon.restore();
