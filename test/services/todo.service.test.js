@@ -58,16 +58,6 @@ describe("Todo Service", () => {
       //assert
       expect(stub.calledOnce).to.be.true;
     });
-
-    it("should throw InvalidRequestParametersError error", async () => {
-      try {
-        let page = -1;
-        let limit = -1;
-        await TodoService.getAllTodoItems(page, limit);
-      } catch (err) {
-        assert.instanceOf(err, InvalidRequestParametersError);
-      }
-    });
   });
 
   describe("#getTodoItem", () => {

@@ -27,12 +27,7 @@ class TodoController {
   }
 
   async add(req, res, next) {
-    try {
-      if (!req.body || !req.body.title) {
-        const errorResponse = {}; //utils.mapResponse("No title specified!");
-        return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
-      }
-
+    try {    
       const { title, description } = req.body;
       const todoItem = await todoService.createTodoItem({ title, description });
 

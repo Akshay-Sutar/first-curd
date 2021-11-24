@@ -11,7 +11,9 @@ router.get("/", BaseMiddleware.validatePaginatedParameters, (req, res, next) =>
 router.get("/:id", (req, res, next) =>
   TodoController.getSpecific(req, res, next)
 );
-router.post("/", (req, res, next) => TodoController.add(req, res, next));
+router.post("/", BaseMiddleware.validateRequestBody, (req, res, next) =>
+  TodoController.add(req, res, next)
+);
 router.put("/:id", (req, res, next) => TodoController.update(req, res, next));
 router.delete("/:id", (req, res, next) =>
   TodoController.delete(req, res, next)

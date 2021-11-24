@@ -1,9 +1,11 @@
 const { InvalidRequestParametersError } = require("../utils/errors");
+const { StatusCodes } = require("http-status-codes");
 
 class BaseMiddleware {
   constructor() {
     this.validatePaginatedParameters =
       this.validatePaginatedParameters.bind(this);
+    this.validateRequestBody = this.validateRequestBody.bind(this);
   }
   validatePaginatedParameters(req, res, next) {
     let { page, limit } = req.query;
@@ -27,6 +29,13 @@ class BaseMiddleware {
       return next(new InvalidRequestParametersError("Invalid limit"));
     }
 
+    return next();
+  }
+
+  validateRequestBody(req, res, next) {
+    if (!req.body || !req.body.title) {
+      return res.status(StatusCodes.BAD_REQUEST).json({});
+    }
     return next();
   }
 }

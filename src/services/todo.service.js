@@ -10,9 +10,7 @@ class TodoService {
   getAllTodoItems({ page, limit }) {
     page = parseInt(page, 10);
     limit = parseInt(limit, 10);
-    if (page < 1 || limit < 1 || isNaN(page) || isNaN(limit)) {
-      throw new InvalidRequestParametersError("Invalid pagination parameters");
-    }
+    
     return TodoRepository.getAll({ page, limit });
   }
 
