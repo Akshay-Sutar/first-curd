@@ -375,7 +375,7 @@ describe("TodoController", () => {
         });
     });
 
-    it("should respond with NOT_FOUND for wwrong id", (done) => {
+    it("should respond with NOT_FOUND for wrong id", (done) => {
       const id = mongoose.Types.ObjectId();
       request(app)
         .put(`/api/v1/todo/${id}`)
@@ -385,30 +385,6 @@ describe("TodoController", () => {
         .expect(StatusCodes.NOT_FOUND)
         .then(() => done())
         .catch(() => done());
-    });
-
-    it("should return INTERNAL_SERVER_ERROR while updating todo", (done) => {
-      Todo.find({})
-        .limit(1)
-        .exec()
-        .then((todo) => {
-          let id = todo[0]._id.toString();
-          const stub = sinon
-            .stub(TodoService, "updateTodoItem")
-            .throws(new Error());
-          request(app)
-            .put(`/api/v1/todo/${id}`)
-            .send(newTodo)
-            .set("Accept", "application/json")
-            .expect("Content-type", /json/)
-            .expect(StatusCodes.INTERNAL_SERVER_ERROR)
-            .then((response) => {
-              done();
-            })
-            .catch((err) => {
-              done(err);
-            });
-        });
     });
   });
 

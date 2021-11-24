@@ -1,3 +1,4 @@
+const { InvalidRequestParametersError } = require("../utils/errors/");
 const Ajv = require("ajv").default;
 const addFormats = require("ajv-formats").default;
 
@@ -23,7 +24,7 @@ const ValidateTodoSchemaMiddleware = (name) => {
       await validate(req.body);
       next();
     } catch (err) {
-      return next(err);
+      return next(new InvalidRequestParametersError());
     }
   };
 };

@@ -27,7 +27,7 @@ class TodoController {
   }
 
   async add(req, res, next) {
-    try {    
+    try {
       const { title, description } = req.body;
       const todoItem = await todoService.createTodoItem({ title, description });
 
@@ -51,11 +51,6 @@ class TodoController {
   async update(req, res, next) {
     let errorResponse;
     try {
-      if (!req.body || !Object.keys(req.body).length) {
-        errorResponse = {}; //utils.mapResponse("Empty body parameter!");
-        return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
-      }
-
       const { id } = req.params;
 
       if (!isValidObjectId(id)) {
