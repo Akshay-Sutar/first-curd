@@ -42,8 +42,8 @@ if (process.env.NODE_ENV !== 'test') {
       console.error("Connection failed", err);
       process.exit(1);
     });
-} else {
-  app.listen(options.port);
 }
 
-module.exports = app;
+module.exports = { 
+  app 
+};
